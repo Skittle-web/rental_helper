@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Менеджер аренды жилья</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .calendar-month {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 20px;
+        }
+        .calendar-day {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            cursor: pointer;
+            min-height: 60px;
+        }
+        .calendar-day:hover {
+            background: #f0f0f0;
+        }
+        .calendar-day.booked {
+            background: #ffcccc;
+            color: #cc0000;
+        }
+        .calendar-day.selected {
+            background: #4CAF50;
+            color: white;
+        }
+        .calendar-day.today {
+            border: 2px solid #2196F3;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        /* Language switcher */
+        .top-bar {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 100;
+        }
+        
+        .language-switcher {
+            display: flex;
+            gap: 5px;
+            background: rgba(255,255,255,0.9);
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .lang-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            background: #f8f9fa;
+            color: #495057;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .lang-btn:hover {
+            background: #e9ecef;
+        }
+        
+        .lang-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        /* Booked properties styles */
+        .booked-property-item {
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            border: 1px solid #fc8181;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            animation: fadeIn 0.3s;
+        }
+        
+        .booked-property-item h5 {
+            color: #c53030;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .booking-overlap {
+            background: #feebc8;
+            color: #c05621;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+        
+        /* Animations */
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Language switcher -->
+    <div class="top-bar">
+        <div class="language-switcher">
+            <button id="lang-ru" class="lang-btn active">🇷🇺 Рус</button>
+            <button id="lang-en" class="lang-btn">🇬🇧 Eng</button>
+        </div>
+    </div>
+    
+    <div class="app-container">
+        <!-- Верхнее меню -->
+        <div class="header">
+            <button class="tab-btn active" data-tab="calendar">📅 Календарь</button>
+            <button class="tab-btn" data-tab="properties">🏠 Жилье</button>
+            <button class="tab-btn" data-tab="bookings">📋 Все брони</button>
+        </div>
+
+        <!-- Вкладка Календарь -->
+        <div id="calendar-tab" class="tab-content active">
+            <div class="calendar-controls">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="date-range" placeholder="Выберите даты..." style="flex: 1;">
+                    <button id="check-availability" class="primary-btn">Показать свободные</button>
+                    <button id="clear-selection" class="secondary-btn">Очистить</button>
+                </div>
+                <div style="margin-top: 10px;">
+                    <button id="prev-month" class="small-btn">◀</button>
+                    <span id="current-month" style="margin: 0 15px; font-weight: bold;"></span>
+                    <button id="next-month" class="small-btn">▶</button>
+                </div>
+            </div>
+            
+            <div class="calendar-container">
+                <div class="calendar-wrapper">
+                    <div id="calendar"></div>
+                </div>
+                
+                <div class="results-sidebar">
+                    <h3 id="available-title">🏠 Свободное жилье:</h3>
+                    <div id="available-properties" class="properties-list"></div>
+                    
+                    <!-- Booked properties will be inserted here by JavaScript -->
+                    <div id="booked-properties-container"></div>
+                    
+                    <div id="selected-dates-info" style="margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+                        <small>Выберите даты в календаре или в поле выше</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Жилье -->
+        <div id="properties-tab" class="tab-content">
+            <div class="page-header">
+                <h2 id="manage-properties-title">Управление жильем</h2>
+                <button id="add-property" class="add-btn">+ Добавить жилье</button>
+            </div>
+            <div id="properties-list" class="cards-container"></div>
+        </div>
+
+        <!-- Вкладка Все брони -->
+        <div id="bookings-tab" class="tab-content">
+            <div class="page-header">
+                <h2 id="all-bookings-title">Все бронирования</h2>
+                <button id="add-booking" class="add-btn">+ Новая бронь</button>
+            </div>
+            <div id="all-bookings" class="bookings-container"></div>
+        </div>
+    </div>
+
+    <!-- Модальные окна -->
+    <div id="modal-overlay" class="modal-overlay" style="display: none;"></div>
+    
+    <!-- Модалка добавления жилья -->
+    <div id="property-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modal-title">Добавить жилье</h3>
+            <div class="form-group">
+                <label id="property-name-label">Название:</label>
+                <input type="text" id="property-name" class="form-input" placeholder="Например: Квартира в центре">
+            </div>
+            <div class="form-group">
+                <label id="property-desc-label">Описание:</label>
+                <textarea id="property-description" class="form-input" rows="3" placeholder="Описание, особенности..."></textarea>
+            </div>
+            <div class="form-group">
+                <label id="property-address-label">Адрес:</label>
+                <input type="text" id="property-address" class="form-input" placeholder="Полный адрес">
+            </div>
+            <div class="form-group">
+                <label id="property-price-label">Цена за сутки (₽):</label>
+                <input type="number" id="property-price" class="form-input" placeholder="2000">
+            </div>
+            <div class="form-group">
+                <label id="property-color-label">Цвет в календаре:</label>
+                <input type="color" id="property-color" value="#4CAF50">
+            </div>
+            <div class="modal-actions">
+                <button id="save-property" class="primary-btn">Сохранить</button>
+                <button id="cancel-property" class="secondary-btn">Отмена</button>
+                <button id="delete-property" class="danger-btn" style="display: none;">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка бронирования -->
+    <div id="booking-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="booking-modal-title">Новое бронирование</h3>
+            <div class="form-group">
+                <label id="booking-property-label">Жилье:</label>
+                <select id="booking-property" class="form-input"></select>
+            </div>
+            <div class="form-group">
+                <label id="booking-start-label">Дата начала:</label>
+                <input type="date" id="booking-start" class="form-input">
+            </div>
+            <div class="form-group">
+                <label id="booking-end-label">Дата окончания:</label>
+                <input type="date" id="booking-end" class="form-input">
+            </div>
+            <div class="form-group">
+                <label id="booking-guest-label">Имя гостя:</label>
+                <input type="text" id="booking-guest" class="form-input" placeholder="ФИО гостя">
+            </div>
+            <div class="form-group">
+                <label id="booking-phone-label">Телефон:</label>
+                <input type="tel" id="booking-phone" class="form-input" placeholder="+7 999 123-45-67">
+            </div>
+            <div class="form-group">
+                <label id="booking-notes-label">Примечания:</label>
+                <textarea id="booking-notes" class="form-input" rows="3" placeholder="Дополнительная информация"></textarea>
+            </div>
+            <div class="form-group">
+                <label id="booking-price-label">Цена (₽):</label>
+                <input type="number" id="booking-price" class="form-input" placeholder="Стоимость брони">
+            </div>
+            <div class="modal-actions">
+                <button id="save-booking" class="primary-btn">Сохранить</button>
+                <button id="cancel-booking" class="secondary-btn">Отмена</button>
+                <button id="delete-booking" class="danger-btn" style="display: none;">Удалить бронь</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
