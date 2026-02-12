@@ -21,6 +21,44 @@ body {
     min-height: 90vh;
 }
 
+/* Language switcher */
+.top-bar {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 100;
+}
+
+.language-switcher {
+    display: flex;
+    gap: 5px;
+    background: rgba(255,255,255,0.9);
+    padding: 5px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.lang-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #f8f9fa;
+    color: #495057;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.lang-btn:hover {
+    background: #e9ecef;
+}
+
+.lang-btn.active {
+    background: #3498db;
+    color: white;
+}
+
+/* Header and tabs */
 .header {
     display: flex;
     background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
@@ -468,12 +506,34 @@ body {
     display: inline-block;
 }
 
+/* Booked properties styles */
+.booked-property-item {
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border: 1px solid #fc8181;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    animation: fadeIn 0.3s;
+}
+
+.booked-property-item h5 {
+    color: #c53030;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
     .app-container {
         border-radius: 0;
         min-height: 100vh;
-        margin: -20px;
+        margin: -10px;
     }
     
     .tab-btn {
@@ -507,6 +567,14 @@ body {
         right: 10px;
         z-index: 1000;
     }
+    
+    .calendar-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .results-sidebar {
+        margin-top: 20px;
+    }
 }
 
 /* No results */
@@ -522,4 +590,620 @@ body {
 .no-results p {
     margin: 10px 0;
     font-size: 16px;
+}
+
+/* Booked properties title */
+#booked-properties-container h4 {
+    margin: 25px 0 15px 0;
+    color: #e74c3c;
+    font-size: 18px;
+}
+
+/* Стили для поиска */
+.search-container {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e0e6ed;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 16px;
+    padding-left: 45px;
+    border: 2px solid #e0e6ed;
+    border-radius: 8px;
+    font-size: 15px;
+    background: white url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 15px center;
+    background-size: 16px;
+    transition: all 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.search-input::placeholder {
+    color: #9ca3af;
+}
+
+.search-results-info {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    font-size: 14px;
+    color: #4a5568;
+}
+
+.no-search-results {
+    text-align: center;
+    padding: 40px;
+    color: #718096;
+}
+
+.no-search-results p {
+    margin: 10px 0;
+}
+
+.highlight {
+    background-color: #fff3cd;
+    padding: 0 2px;
+    border-radius: 2px;
+    font-weight: 500;
+}
+
+/* Улучшенная подсветка */
+mark.highlight {
+    background-color: #ffeb3b;
+    padding: 0 2px;
+    border-radius: 3px;
+    font-weight: 600;
+    color: #333;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { background-color: #ffeb3b; }
+    50% { background-color: #ffd54f; }
+    100% { background-color: #ffeb3b; }
+}
+
+/* Эффект при поиске */
+.searching .property-card:not(:has(mark)),
+.searching .booking-card:not(:has(mark)) {
+    opacity: 0.3;
+    transition: opacity 0.3s;
+}
+
+.searching .property-card:has(mark),
+.searching .booking-card:has(mark) {
+    border: 2px solid #ffeb3b;
+    box-shadow: 0 0 15px rgba(255, 235, 59, 0.3);
+}
+
+
+.highlight {
+    background-color: #ffeb3b;
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+.no-search-results {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.no-search-results h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.search-results-info {
+    background: #f8f9fa;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+
+/* Новые стили для гольф-машин */
+.golf-cart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    border-left: 6px solid #FF9800;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.golf-cart-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+
+.golf-cart-card h3 {
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 20px;
+}
+
+/* Стили для очень важных объектов */
+.important-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ff0000;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    animation: pulse-important 1.5s infinite;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.important-badge-small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ff0000;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    animation: pulse-important 1.5s infinite;
+}
+
+@keyframes pulse-important {
+    0% { background-color: #ff0000; transform: scale(1); }
+    50% { background-color: #ff4444; transform: scale(1.1); box-shadow: 0 0 15px rgba(255, 0, 0, 0.8); }
+    100% { background-color: #ff0000; transform: scale(1); }
+}
+
+.important-checkbox {
+    background: #fff3f3;
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #ffcdd2;
+    margin-bottom: 20px;
+}
+
+.important-label {
+    color: #d32f2f;
+    font-weight: bold;
+    font-size: 16px;
+    margin-left: 8px;
+}
+
+/* Стили для депозита */
+.deposit-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.deposit-paid {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.deposit-not-paid {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* Стили для политики отмены */
+.cancellation-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.cancellation-free {
+    background: #e8f5e9;
+    color: #27ae60;
+}
+
+.cancellation-paid {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.cancellation-partial {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.cancellation-non-refundable {
+    background: #f3e5f5;
+    color: #6a1b9a;
+}
+
+/* Доступные карточки в календаре */
+.available-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.available-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+/* Чекбокс группа */
+.checkbox-group {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Стили для занятых гольф-машин */
+.booked-golf-cart-item {
+    background: linear-gradient(135deg, #fff5e6 0%, #ffe0b2 100%);
+    border: 1px solid #ffb74d;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+/* Кнопка для гольф-машин */
+.golf-cart-btn {
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    color: white;
+    border: none;
+}
+
+.golf-cart-btn:hover {
+    background: linear-gradient(135deg, #F57C00 0%, #EF6C00 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .golf-cart-card {
+        padding: 20px;
+    }
+    
+    .important-badge {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+    
+    .deposit-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Стили для отображения цены */
+.booking-price {
+    font-size: 18px;
+    font-weight: bold;
+    color: #27ae60;
+    margin: 10px 0;
+}
+
+/* Иконки для разных типов */
+.item-type-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 14px;
+    margin-right: 8px;
+}
+
+.item-type-property {
+    background: #e8f5e9;
+    color: #27ae60;
+}
+
+.item-type-golf-cart {
+    background: #fff3e0;
+    color: #FF9800;
+}
+
+/* ===== НОВЫЕ СТИЛИ ДЛЯ КНОПКИ "ОЧЕНЬ ВАЖНО" ===== */
+
+/* Контейнер для важной информации */
+.important-container {
+    background: #fff3f3;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 2px solid #ffcdd2;
+    margin-bottom: 24px;
+    transition: all 0.3s ease;
+}
+
+.important-container:hover {
+    background: #ffeeee;
+    border-color: #ff8a80;
+}
+
+/* Лейбл для чекбокса */
+.important-label {
+    color: #d32f2f;
+    font-weight: 700;
+    font-size: 16px;
+    margin-left: 8px;
+    letter-spacing: 0.5px;
+}
+
+/* Текстовое поле для важного сообщения */
+.important-textarea {
+    margin-top: 12px;
+    border: 2px solid #ffcdd2;
+    background: #fff9f9;
+    resize: vertical;
+    font-size: 14px;
+    line-height: 1.5;
+    transition: all 0.2s;
+}
+
+.important-textarea:focus {
+    border-color: #ff0000;
+    box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.1);
+    outline: none;
+    background: white;
+}
+
+/* КНОПКА-ИКОНКА "ОЧЕНЬ ВАЖНО" (БОЛЬШАЯ) */
+.important-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ff0000;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    animation: pulse-important 1.8s infinite;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid white;
+}
+
+.important-badge:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 25px rgba(255, 0, 0, 0.9);
+    background: #ff4444;
+}
+
+/* КНОПКА-ИКОНКА МАЛЕНЬКАЯ (для броней и компактных мест) */
+.important-badge-small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ff0000;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    animation: pulse-important 1.8s infinite;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1.5px solid white;
+}
+
+.important-badge-small:hover {
+    transform: scale(1.25);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+    background: #ff4444;
+}
+
+/* АНИМАЦИЯ ПУЛЬСАЦИИ */
+@keyframes pulse-important {
+    0% { 
+        background-color: #ff0000; 
+        transform: scale(1); 
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+    }
+    50% { 
+        background-color: #ff3333; 
+        transform: scale(1.08); 
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.9);
+    }
+    100% { 
+        background-color: #ff0000; 
+        transform: scale(1); 
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+    }
+}
+
+/* МОДАЛЬНОЕ ОКНО ДЛЯ ВАЖНОГО СООБЩЕНИЯ */
+.important-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 550px;
+    border-top: 10px solid #ff0000;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+}
+
+.important-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.important-modal-icon {
+    background: #ff0000;
+    color: white;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 26px;
+    animation: pulse-important 1.8s infinite;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+}
+
+.important-modal-title {
+    margin: 0;
+    color: #d32f2f;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.important-modal-message {
+    background: #fff8f8;
+    border-left: 8px solid #ff0000;
+    padding: 22px;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #2c3e50;
+    white-space: pre-wrap;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.02);
+    margin-bottom: 24px;
+}
+
+/* Подсветка важных объектов в календаре */
+.calendar-day .booking-dot.important {
+    border: 2px solid #ff0000;
+    animation: pulse-important 1.8s infinite;
+    width: 10px;
+    height: 10px;
+}
+
+/* Красная полоса для важных карточек */
+.property-card.important,
+.golf-cart-card.important,
+.booking-card.important {
+    border-left-width: 10px !important;
+    border-left-color: #ff0000 !important;
+    position: relative;
+}
+
+.property-card.important::after,
+.golf-cart-card.important::after,
+.booking-card.important::after {
+    content: "❗";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    color: #ff0000;
+    animation: pulse-important 1.8s infinite;
+    opacity: 0.9;
+}
+
+/* Кнопка закрытия модалки важного сообщения */
+.important-modal-close-btn {
+    padding: 12px 32px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.important-modal-close-btn:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(231, 76, 60, 0.4);
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .important-badge {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    
+    .important-badge-small {
+        width: 24px;
+        height: 24px;
+        font-size: 13px;
+    }
+    
+    .important-modal-content {
+        padding: 20px;
+        margin: 0 15px;
+    }
+    
+    .important-modal-title {
+        font-size: 20px;
+    }
+    
+    .important-modal-message {
+        padding: 16px;
+        font-size: 15px;
+    }
+}
+
+/* Стили для чекбокса "ОЧЕНЬ ВАЖНО" */
+.important-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #ff0000;
+    border-radius: 6px;
+}
+
+.important-container input[type="checkbox"]:checked {
+    background-color: #ff0000;
+    border-color: #ff0000;
+}
+
+/* Дополнительная анимация при наведении на важную карточку */
+.property-card:has(.important-badge):hover,
+.golf-cart-card:has(.important-badge):hover,
+.booking-card:has(.important-badge-small):hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 30px rgba(255, 0, 0, 0.15);
 }
