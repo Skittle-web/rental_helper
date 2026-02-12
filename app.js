@@ -116,10 +116,10 @@ class RentalApp {
                 deposit: 'Депозит (₽):',
                 depositPaid: 'Депозит внесен',
                 cancellationPolicy: 'Политика отмены:',
-                freeCancellation: 'Бесплатная отмена',
-                paidCancellation: 'Платная отмена',
-                partialCancellation: 'Частичная компенсация',
-                nonRefundable: 'Невозвратный тариф',
+                freeCancellation: '🟢 Бесплатная отмена',
+                paidCancellation: '🔴 Платная отмена',
+                partialCancellation: '🟡 Частичная компенсация',
+                nonRefundable: '⛔ Невозвратный тариф',
                 freeCancelUntil: 'Срок бесплатной отмены:',
                 deleteBooking: 'Удалить бронь',
                 nightsCount: 'ночей',
@@ -247,10 +247,10 @@ class RentalApp {
                 deposit: 'Deposit (₽):',
                 depositPaid: 'Deposit paid',
                 cancellationPolicy: 'Cancellation policy:',
-                freeCancellation: 'Free cancellation',
-                paidCancellation: 'Paid cancellation',
-                partialCancellation: 'Partial refund',
-                nonRefundable: 'Non-refundable',
+                freeCancellation: '🟢 Free cancellation',
+                paidCancellation: '🔴 Paid cancellation',
+                partialCancellation: '🟡 Partial refund',
+                nonRefundable: '⛔ Non-refundable',
                 freeCancelUntil: 'Free cancellation until:',
                 deleteBooking: 'Delete booking',
                 nightsCount: 'nights',
@@ -304,6 +304,7 @@ class RentalApp {
             }
         };
         
+        // Запускаем инициализацию
         this.init();
     }
     
@@ -393,6 +394,7 @@ class RentalApp {
         this.initDatePicker();
         this.setupEventListeners();
         this.setupImportantCheckboxListeners();
+        this.setupImportantClickHandler(); // Новый метод!
         this.setupElectronListeners();
         this.updateUI();
         this.updateLanguageButtons();
@@ -401,6 +403,26 @@ class RentalApp {
         this.loadGolfCartsList();
         this.loadAllBookings();
         this.updateSelectedDatesInfo();
+    }
+
+    // НОВЫЙ МЕТОД: глобальный обработчик кликов по важным значкам
+    setupImportantClickHandler() {
+        document.addEventListener('click', (e) => {
+            // Проверяем, кликнули ли по важному значку или его дочерним элементам
+            const badge = e.target.closest('.important-badge, .important-badge-small');
+            if (badge) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Получаем данные из атрибутов
+                const title = badge.dataset.importantTitle || 'Важная информация';
+                const message = badge.dataset.importantMessage || this.t('noImportantText');
+                
+                // Показываем модалку
+                this.showImportantMessage(title, message);
+                return false;
+            }
+        });
     }
 
     setupImportantCheckboxListeners() {
@@ -711,28 +733,45 @@ class RentalApp {
         });
     }
 
-    // Показать важное сообщение при клике на иконку
+    // ИСПРАВЛЕННЫЙ МЕТОД: показ важного сообщения
     showImportantMessage(title, message) {
+        console.log('Showing important message:', title, message); // Отладка
+        
         const modalId = 'important-modal-' + Date.now();
         const modalOverlay = document.getElementById('modal-overlay');
+        
+        if (!modalOverlay) {
+            console.error('Modal overlay not found!');
+            return;
+        }
+
+        // Экранируем HTML
+        const safeTitle = this.escapeHtml(title);
+        const safeMessage = this.escapeHtml(message || this.t('noImportantText'));
 
         const modalHTML = `
             <div style="max-width: 500px; padding: 25px; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); border-top: 8px solid #ff0000;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
                     <span style="background: #ff0000; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 22px; animation: pulse-important 1.5s infinite;">❗</span>
-                    <h3 style="margin: 0; color: #d32f2f; font-size: 20px;">${title}</h3>
+                    <h3 style="margin: 0; color: #d32f2f; font-size: 20px;">${safeTitle}</h3>
                 </div>
                 <div style="background: #fff3f3; border-left: 6px solid #ff0000; padding: 20px; border-radius: 8px; margin-bottom: 20px; font-size: 16px; line-height: 1.6; color: #333; white-space: pre-wrap;">
-                    ${message || this.t('noImportantText')}
+                    ${safeMessage}
                 </div>
                 <div style="display: flex; justify-content: flex-end;">
-                    <button onclick="document.getElementById('${modalId}').remove(); document.getElementById('modal-overlay').style.display = 'none';" 
+                    <button class="important-modal-close-btn" 
                             style="padding: 10px 30px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">
                         ${this.t('close')}
                     </button>
                 </div>
             </div>
         `;
+
+        // Удаляем предыдущую модалку если есть
+        const existingModal = document.querySelector('[id^="important-modal-"]');
+        if (existingModal) {
+            existingModal.remove();
+        }
 
         const modalContainer = document.createElement('div');
         modalContainer.id = modalId;
@@ -743,10 +782,28 @@ class RentalApp {
         modalOverlay.style.display = 'block';
         document.body.appendChild(modalContainer);
 
+        // Обработчик для кнопки закрытия
+        const closeBtn = modalContainer.querySelector('.important-modal-close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modalContainer.remove();
+                modalOverlay.style.display = 'none';
+            });
+        }
+
+        // Обработчик для оверлея
         modalOverlay.onclick = () => {
-            document.getElementById(modalId)?.remove();
+            modalContainer.remove();
             modalOverlay.style.display = 'none';
         };
+    }
+
+    // Вспомогательный метод для экранирования HTML
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
     
     switchLanguage(lang) {
@@ -1309,7 +1366,7 @@ class RentalApp {
                             🔍 Найдено: <strong>${totalFound}</strong> объектов 
                             (${availableCount} свободных, ${bookedCount} занятых)
                         </div>
-                        <button onclick="app.clearCalendarSearch()" style="padding: 4px 10px; background: #e2e8f0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                        <button onclick="window.app.clearCalendarSearch()" style="padding: 4px 10px; background: #e2e8f0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
                             Очистить поиск
                         </button>
                     </div>
@@ -1400,12 +1457,20 @@ class RentalApp {
         
         container.innerHTML = `
             <div style="display: flex; flex-direction: column; gap: 12px;">
-                ${properties.map(property => `
+                ${properties.map(property => {
+                    // Экранируем данные для data-атрибутов
+                    const safeTitle = this.escapeHtml(property.name);
+                    const safeMessage = this.escapeHtml(property.importantText || this.t('noImportantText'));
+                    
+                    return `
                     <div class="property-card available-card" style="border-left-color: ${property.color || '#4CAF50'}; ${property.important ? 'border-left-width: 8px; border-left-color: #ff0000;' : ''}">
                         <div style="display: flex; justify-content: space-between; align-items: start;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 ${property.important ? `
-                                    <span class="important-badge" onclick="event.stopPropagation(); app.showImportantMessage('${property.name.replace(/'/g, "\\'")}', ${JSON.stringify(property.importantText || this.t('noImportantText'))})" title="Нажмите, чтобы увидеть детали">❗</span>
+                                    <span class="important-badge" 
+                                          data-important-title="${safeTitle}"
+                                          data-important-message="${safeMessage}"
+                                          title="Нажмите, чтобы увидеть детали">❗</span>
                                 ` : ''}
                                 <h4 style="margin: 0;">${this.highlightText(property.name, this.calendarSearchQuery)}</h4>
                             </div>
@@ -1414,12 +1479,12 @@ class RentalApp {
                         <p style="margin: 8px 0; color: #666; font-size: 14px;">${this.highlightText(property.description || '', this.calendarSearchQuery)}</p>
                         <p class="property-address">📍 ${this.highlightText(property.address || '', this.calendarSearchQuery)}</p>
                         <div class="property-actions" style="margin-top: 15px;">
-                            <button class="primary-btn" onclick="app.bookProperty(${property.id})" style="width: 100%;">
+                            <button class="primary-btn" onclick="window.app.bookProperty(${property.id})" style="width: 100%;">
                                 ${this.t('bookNow')}
                             </button>
                         </div>
                     </div>
-                `).join('')}
+                `}).join('')}
             </div>
         `;
     }
@@ -1444,14 +1509,21 @@ class RentalApp {
         const days = Math.ceil((this.selectedDates[1] - this.selectedDates[0]) / (1000 * 60 * 60 * 24)) + 1;
         
         container.innerHTML = `
-            <h3 style="margin: 20px 0 10px 0; color: #FF9800;">🏌️ Свободные гольф-машины:</h3>
+            <h3 style="margin: 20px 0 10px 0; color: #FF9800;">Свободные гольф-машины:</h3>
             <div style="display: flex; flex-direction: column; gap: 12px;">
-                ${carts.map(cart => `
+                ${carts.map(cart => {
+                    const safeTitle = this.escapeHtml(cart.name);
+                    const safeMessage = this.escapeHtml(cart.importantText || this.t('noImportantText'));
+                    
+                    return `
                     <div class="golf-cart-card available-card" style="border-left-color: ${cart.color || '#FF9800'}; ${cart.important ? 'border-left-width: 8px; border-left-color: #ff0000;' : ''}">
                         <div style="display: flex; justify-content: space-between; align-items: start;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 ${cart.important ? `
-                                    <span class="important-badge" onclick="event.stopPropagation(); app.showImportantMessage('${cart.name.replace(/'/g, "\\'")}', ${JSON.stringify(cart.importantText || this.t('noImportantText'))})" title="Нажмите, чтобы увидеть детали">❗</span>
+                                    <span class="important-badge" 
+                                          data-important-title="${safeTitle}"
+                                          data-important-message="${safeMessage}"
+                                          title="Нажмите, чтобы увидеть детали">❗</span>
                                 ` : ''}
                                 <h4 style="margin: 0;">${this.highlightText(cart.name, this.calendarSearchQuery)}</h4>
                             </div>
@@ -1465,12 +1537,12 @@ class RentalApp {
                         </div>
                         <p style="margin: 8px 0; color: #666; font-size: 14px;">${this.highlightText(cart.description || '', this.calendarSearchQuery)}</p>
                         <div class="property-actions" style="margin-top: 15px;">
-                            <button class="primary-btn" onclick="app.bookGolfCart(${cart.id})" style="width: 100%; background: #FF9800;">
+                            <button class="primary-btn" onclick="window.app.bookGolfCart(${cart.id})" style="width: 100%; background: #FF9800;">
                                 ${this.t('bookNow')}
                             </button>
                         </div>
                     </div>
-                `).join('')}
+                `}).join('')}
             </div>
         `;
     }
@@ -1549,12 +1621,18 @@ class RentalApp {
             const bookingEnd = new Date(booking.endDate);
             const totalBookingNights = Math.ceil((bookingEnd - bookingStart) / (1000 * 60 * 60 * 24)) + 1;
             
+            const safeTitle = this.escapeHtml(property.name);
+            const safeMessage = this.escapeHtml(property.importantText || this.t('noImportantText'));
+            
             return `
                 <div class="booked-property-item" style="border-left: 4px solid ${property.color || '#e74c3c'}; ${property.important ? 'border-left-width: 8px; border-left-color: #ff0000;' : ''}">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             ${property.important ? `
-                                <span class="important-badge-small" onclick="event.stopPropagation(); app.showImportantMessage('${property.name.replace(/'/g, "\\'")}', ${JSON.stringify(property.importantText || this.t('noImportantText'))})" title="Нажмите, чтобы увидеть детали">❗</span>
+                                <span class="important-badge-small" 
+                                      data-important-title="${safeTitle}"
+                                      data-important-message="${safeMessage}"
+                                      title="Нажмите, чтобы увидеть детали">❗</span>
                             ` : ''}
                             <strong style="color: #c53030;">${this.highlightText(property.name, this.calendarSearchQuery)}</strong>
                         </div>
@@ -1582,21 +1660,21 @@ class RentalApp {
                         
                         <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
                             <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
-                                ${booking.price} ₽
+                                💰 ${booking.price} ₽
                             </span>
                             <span style="background: ${booking.depositPaid ? '#e8f5e9' : '#ffebee'}; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
-                                ${this.t('deposit')} ${booking.deposit || 0} ₽
+                                💵 ${this.t('deposit')} ${booking.deposit || 0} ₽
                                 (${booking.depositPaid ? '✅' : '❌'})
                             </span>
                         </div>
                     </div>
                     
                     <div style="margin-top: 10px; display: flex; gap: 8px;">
-                        <button onclick="app.editBooking(${booking.id})" 
+                        <button onclick="window.app.editBooking(${booking.id})" 
                                 style="flex: 1; padding: 6px 12px; background: #f6ad55; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
                             ${this.t('edit')}
                         </button>
-                        <button onclick="app.viewPropertyBookings(${property.id})" 
+                        <button onclick="window.app.viewPropertyBookings(${property.id})" 
                                 style="flex: 1; padding: 6px 12px; background: #4299e1; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
                             ${this.t('viewAllBookings')}
                         </button>
@@ -1622,7 +1700,7 @@ class RentalApp {
         
         const title = document.createElement('h4');
         title.style.cssText = 'margin: 25px 0 15px 0; color: #e74c3c;';
-        title.textContent = `🏌️ Занятые гольф-машины: ${this.calendarSearchQuery ? `(найдено: ${bookedItems.length})` : ''}`;
+        title.textContent = `Занятые гольф-машины: ${this.calendarSearchQuery ? `(найдено: ${bookedItems.length})` : ''}`;
         container.appendChild(title);
         
         const itemsHTML = bookedItems.map(item => {
@@ -1631,12 +1709,18 @@ class RentalApp {
             const bookingEnd = new Date(booking.endDate);
             const totalBookingDays = Math.ceil((bookingEnd - bookingStart) / (1000 * 60 * 60 * 24)) + 1;
             
+            const safeTitle = this.escapeHtml(cart.name);
+            const safeMessage = this.escapeHtml(cart.importantText || this.t('noImportantText'));
+            
             return `
                 <div class="booked-property-item" style="border-left: 4px solid ${cart.color || '#FF9800'}; ${cart.important ? 'border-left-width: 8px; border-left-color: #ff0000;' : ''}">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             ${cart.important ? `
-                                <span class="important-badge-small" onclick="event.stopPropagation(); app.showImportantMessage('${cart.name.replace(/'/g, "\\'")}', ${JSON.stringify(cart.importantText || this.t('noImportantText'))})" title="Нажмите, чтобы увидеть детали">❗</span>
+                                <span class="important-badge-small" 
+                                      data-important-title="${safeTitle}"
+                                      data-important-message="${safeMessage}"
+                                      title="Нажмите, чтобы увидеть детали">❗</span>
                             ` : ''}
                             <strong style="color: #c53030;">${this.highlightText(cart.name, this.calendarSearchQuery)}</strong>
                         </div>
@@ -1665,17 +1749,17 @@ class RentalApp {
                         ${booking.phone ? `<div>${this.highlightText(booking.phone, this.calendarSearchQuery)}</div>` : ''}
                         <div style="margin-top: 5px;">
                             <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
-                                ${booking.price} ₽
+                                💰 ${booking.price} ₽
                             </span>
                         </div>
                     </div>
                     
                     <div style="margin-top: 10px; display: flex; gap: 8px;">
-                        <button onclick="app.editBooking(${booking.id})" 
+                        <button onclick="window.app.editBooking(${booking.id})" 
                                 style="flex: 1; padding: 6px 12px; background: #f6ad55; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
                             ${this.t('edit')}
                         </button>
-                        <button onclick="app.viewGolfCartBookings(${cart.id})" 
+                        <button onclick="window.app.viewGolfCartBookings(${cart.id})" 
                                 style="flex: 1; padding: 6px 12px; background: #4299e1; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
                             ${this.t('viewAllBookings')}
                         </button>
@@ -1709,7 +1793,7 @@ class RentalApp {
                     <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
                     <h4 style="margin-bottom: 10px;">Жилье не найдено</h4>
                     <p>По запросу <strong>"${this.propertiesSearchQuery}"</strong> не найдено ни одного объекта жилья.</p>
-                    <button onclick="app.clearPropertiesSearch()" style="margin-top: 15px; padding: 8px 20px; background: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    <button onclick="window.app.clearPropertiesSearch()" style="margin-top: 15px; padding: 8px 20px; background: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer;">
                         Очистить поиск
                     </button>
                 </div>
@@ -1729,13 +1813,18 @@ class RentalApp {
         
         container.innerHTML = filteredProperties.map(property => {
             const propertyBookings = this.data.bookings.filter(b => b.itemId === property.id && b.itemType === 'property');
+            const safeTitle = this.escapeHtml(property.name);
+            const safeMessage = this.escapeHtml(property.importantText || this.t('noImportantText'));
             
             return `
                 <div class="property-card" data-id="${property.id}" style="border-left-color: ${property.color || '#4CAF50'}; ${property.important ? 'border-left-width: 8px; border-left-color: #ff0000;' : ''}">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             ${property.important ? `
-                                <span class="important-badge" onclick="event.stopPropagation(); app.showImportantMessage('${property.name.replace(/'/g, "\\'")}', ${JSON.stringify(property.importantText || this.t('noImportantText'))})" title="Нажмите, чтобы увидеть детали">❗</span>
+                                <span class="important-badge" 
+                                      data-important-title="${safeTitle}"
+                                      data-important-message="${safeMessage}"
+                                      title="Нажмите, чтобы увидеть детали">❗</span>
                             ` : ''}
                             <h3>${this.highlightText(property.name, this.propertiesSearchQuery)}</h3>
                         </div>
@@ -1778,7 +1867,7 @@ class RentalApp {
                         <div>
                             🔍 Найдено: <strong>${filteredCount}</strong> из ${this.data.properties.length}
                         </div>
-                        <button onclick="app.clearPropertiesSearch()" style="padding: 4px 10px; background: #e2e8f0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                        <button onclick="window.app.clearPropertiesSearch()" style="padding: 4px 10px; background: #e2e8f0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
                             Очистить поиск
                         </button>
                     </div>
@@ -1812,7 +1901,7 @@ class RentalApp {
                     <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
                     <h4 style="margin-bottom: 10px;">Гольф-машины не найдены</h4>
                     <p>По запросу <strong>"${this.golfCartsSearchQuery}"</strong> не найдено ни одной машины.</p>
-                    <button onclick="app.clearGolfCartsSearch()" style="margin-top: 15px; padding: 8px 20px; background: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    <button onclick="window.app.clearGolfCartsSearch()" style="margin-top: 15px; padding: 8px 20px; background: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer;">
                         Очистить поиск
                     </button>
                 </div>
@@ -1832,13 +1921,18 @@ class RentalApp {
         
         container.innerHTML = filteredCarts.map(cart => {
             const cartBookings = this.data.bookings.filter(b => b.itemId === cart.id && b.itemType === 'golf-cart');
+            const safeTitle = this.escapeHtml(cart.name);
+            const safeMessage = this.escapeHtml(cart.importantText || this.t('noImportantText'));
             
             return `
                 <div class="golf-cart-card" data-id="${cart.id}" style="border-left-color: ${cart.color || '#FF9800'}; ${cart.important ? 'border-left-width: 8px; border-left-color: #ff0000;' : ''}">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             ${cart.important ? `
-                                <span class="important-badge" onclick="event.stopPropagation(); app.showImportantMessage('${cart.name.replace(/'/g, "\\'")}', ${JSON.stringify(cart.importantText || this.t('noImportantText'))})" title="Нажмите, чтобы увидеть детали">❗</span>
+                                <span class="important-badge" 
+                                      data-important-title="${safeTitle}"
+                                      data-important-message="${safeMessage}"
+                                      title="Нажмите, чтобы увидеть детали">❗</span>
                             ` : ''}
                             <h3>${this.highlightText(cart.name, this.golfCartsSearchQuery)}</h3>
                         </div>
@@ -1884,7 +1978,7 @@ class RentalApp {
                         <div>
                             🔍 Найдено: <strong>${filteredCount}</strong> из ${this.data.golfCarts.length}
                         </div>
-                        <button onclick="app.clearGolfCartsSearch()" style="padding: 4px 10px; background: #e2e8f0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                        <button onclick="window.app.clearGolfCartsSearch()" style="padding: 4px 10px; background: #e2e8f0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
                             Очистить поиск
                         </button>
                     </div>
@@ -1920,7 +2014,7 @@ class RentalApp {
                     <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
                     <h4 style="margin-bottom: 10px;">Бронирования не найдены</h4>
                     <p>По запросу <strong>"${this.bookingsSearchQuery}"</strong> не найдено ни одного бронирования.</p>
-                    <button onclick="app.clearBookingsSearch()" style="margin-top: 15px; padding: 8px 20px; background: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    <button onclick="window.app.clearBookingsSearch()" style="margin-top: 15px; padding: 8px 20px; background: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer;">
                         Очистить поиск
                     </button>
                 </div>
@@ -1962,12 +2056,18 @@ class RentalApp {
             const endDate = new Date(booking.endDate);
             const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
             
+            const safeTitle = this.escapeHtml(itemName);
+            const safeMessage = this.escapeHtml(itemImportantText || this.t('noImportantText'));
+            
             return `
                 <div class="booking-card" data-booking-id="${booking.id}" style="border-left: 5px solid ${itemColor}; ${itemImportant ? 'border-left-width: 8px; border-left-color: #ff0000;' : ''}">
                     <div>
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
                             ${itemImportant ? `
-                                <span class="important-badge-small" onclick="event.stopPropagation(); app.showImportantMessage('${itemName.replace(/'/g, "\\'")}', ${JSON.stringify(itemImportantText || this.t('noImportantText'))})" title="Нажмите, чтобы увидеть детали">❗</span>
+                                <span class="important-badge-small" 
+                                      data-important-title="${safeTitle}"
+                                      data-important-message="${safeMessage}"
+                                      title="Нажмите, чтобы увидеть детали">❗</span>
                             ` : ''}
                             <div style="width: 12px; height: 12px; border-radius: 50%; background: ${itemColor}"></div>
                             <div>
@@ -2063,7 +2163,7 @@ class RentalApp {
                         <div>
                             🔍 Найдено: <strong>${filteredCount}</strong> из ${this.data.bookings.length}
                         </div>
-                        <button onclick="app.clearBookingsSearch()" style="padding: 4px 10px; background: #e2e8f0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                        <button onclick="window.app.clearBookingsSearch()" style="padding: 4px 10px; background: #e2e8f0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
                             Очистить поиск
                         </button>
                     </div>
@@ -2111,7 +2211,10 @@ class RentalApp {
             <div style="max-width: 600px; padding: 20px; background: white; border-radius: 10px; max-height: 80vh; overflow-y: auto;">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
                     ${property.important ? `
-                        <span class="important-badge" onclick="event.stopPropagation(); app.showImportantMessage('${property.name.replace(/'/g, "\\'")}', ${JSON.stringify(property.importantText || this.t('noImportantText'))})" title="Нажмите, чтобы увидеть детали">❗</span>
+                        <span class="important-badge" 
+                              data-important-title="${this.escapeHtml(property.name)}"
+                              data-important-message="${this.escapeHtml(property.importantText || this.t('noImportantText'))}"
+                              title="Нажмите, чтобы увидеть детали">❗</span>
                     ` : ''}
                     <h3 style="margin: 0;">${this.t('propertyBookings')}: ${property.name}</h3>
                 </div>
@@ -2146,11 +2249,11 @@ class RentalApp {
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <button onclick="app.editBooking(${booking.id})" 
+                                <button onclick="window.app.editBooking(${booking.id})" 
                                         style="padding: 5px 10px; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                     ${this.t('edit')}
                                 </button>
-                                <button onclick="app.deleteBooking(${booking.id})" 
+                                <button onclick="window.app.deleteBooking(${booking.id})" 
                                         style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                     ${this.t('delete')}
                                 </button>
@@ -2167,7 +2270,7 @@ class RentalApp {
                         style="padding: 10px 30px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
                     ${this.t('close')}
                 </button>
-                <button onclick="app.bookProperty(${propertyId}); document.getElementById('${modalId}').remove();" 
+                <button onclick="window.app.bookProperty(${propertyId}); document.getElementById('${modalId}').remove();" 
                         style="padding: 10px 30px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
                     ${this.t('addBooking')}
                 </button>
@@ -2204,7 +2307,10 @@ class RentalApp {
             <div style="max-width: 600px; padding: 20px; background: white; border-radius: 10px; max-height: 80vh; overflow-y: auto;">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
                     ${cart.important ? `
-                        <span class="important-badge" onclick="event.stopPropagation(); app.showImportantMessage('${cart.name.replace(/'/g, "\\'")}', ${JSON.stringify(cart.importantText || this.t('noImportantText'))})" title="Нажмите, чтобы увидеть детали">❗</span>
+                        <span class="important-badge" 
+                              data-important-title="${this.escapeHtml(cart.name)}"
+                              data-important-message="${this.escapeHtml(cart.importantText || this.t('noImportantText'))}"
+                              title="Нажмите, чтобы увидеть детали">❗</span>
                     ` : ''}
                     <h3 style="margin: 0;">Бронирования гольф-машины: ${cart.name}</h3>
                 </div>
@@ -2234,11 +2340,11 @@ class RentalApp {
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <button onclick="app.editBooking(${booking.id})" 
+                                <button onclick="window.app.editBooking(${booking.id})" 
                                         style="padding: 5px 10px; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                     ${this.t('edit')}
                                 </button>
-                                <button onclick="app.deleteBooking(${booking.id})" 
+                                <button onclick="window.app.deleteBooking(${booking.id})" 
                                         style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                     ${this.t('delete')}
                                 </button>
@@ -2255,7 +2361,7 @@ class RentalApp {
                         style="padding: 10px 30px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
                     ${this.t('close')}
                 </button>
-                <button onclick="app.bookGolfCart(${cartId}); document.getElementById('${modalId}').remove();" 
+                <button onclick="window.app.bookGolfCart(${cartId}); document.getElementById('${modalId}').remove();" 
                         style="padding: 10px 30px; background: #FF9800; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
                     ${this.t('addBooking')}
                 </button>
@@ -2781,6 +2887,5 @@ let app;
 
 document.addEventListener('DOMContentLoaded', () => {
     app = new RentalApp();
-    window.app = app;
+    window.app = app; // Это критически важно!
 });
-
