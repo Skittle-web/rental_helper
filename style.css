@@ -11,6 +11,22 @@ body {
     padding: 20px;
 }
 
+/* ФИКС ДЛЯ ELECTRON: заставляем placeholder работать */
+input::placeholder,
+textarea::placeholder {
+    opacity: 1 !important;
+    color: #9ca3af !important;
+    font-family: inherit !important;
+    pointer-events: none !important; /* Важно! */
+    user-select: none !important;
+}
+
+input, textarea, select {
+    -webkit-app-region: no-drag; /* Отключаем перетаскивание окна */
+    pointer-events: auto !important;
+    background-color: white !important;
+}
+
 .app-container {
     max-width: 1400px;
     margin: 0 auto;
