@@ -116,10 +116,10 @@ class RentalApp {
                 deposit: 'Депозит (₽):',
                 depositPaid: 'Депозит внесен',
                 cancellationPolicy: 'Политика отмены:',
-                freeCancellation: '🟢 Бесплатная отмена',
-                paidCancellation: '🔴 Платная отмена',
-                partialCancellation: '🟡 Частичная компенсация',
-                nonRefundable: '⛔ Невозвратный тариф',
+                freeCancellation: 'Бесплатная отмена',
+                paidCancellation: 'Платная отмена',
+                partialCancellation: 'Частичная компенсация',
+                nonRefundable: 'Невозвратный тариф',
                 freeCancelUntil: 'Срок бесплатной отмены:',
                 deleteBooking: 'Удалить бронь',
                 nightsCount: 'ночей',
@@ -247,10 +247,10 @@ class RentalApp {
                 deposit: 'Deposit (₽):',
                 depositPaid: 'Deposit paid',
                 cancellationPolicy: 'Cancellation policy:',
-                freeCancellation: '🟢 Free cancellation',
-                paidCancellation: '🔴 Paid cancellation',
-                partialCancellation: '🟡 Partial refund',
-                nonRefundable: '⛔ Non-refundable',
+                freeCancellation: 'Free cancellation',
+                paidCancellation: 'Paid cancellation',
+                partialCancellation: 'Partial refund',
+                nonRefundable: 'Non-refundable',
                 freeCancelUntil: 'Free cancellation until:',
                 deleteBooking: 'Delete booking',
                 nightsCount: 'nights',
@@ -784,10 +784,10 @@ class RentalApp {
         // Обновление текста кнопок вкладок
         document.querySelectorAll('.tab-btn').forEach((btn) => {
             const tab = btn.dataset.tab;
-            if (tab === 'calendar') btn.innerHTML = `📅 ${this.t('calendar')}`;
-            if (tab === 'properties') btn.innerHTML = `🏠 ${this.t('properties')}`;
-            if (tab === 'golf-carts') btn.innerHTML = `🏌️ ${this.t('golfCarts')}`;
-            if (tab === 'bookings') btn.innerHTML = `📋 ${this.t('bookings')}`;
+            if (tab === 'calendar') btn.innerHTML = `${this.t('calendar')}`;
+            if (tab === 'properties') btn.innerHTML = `${this.t('properties')}`;
+            if (tab === 'golf-carts') btn.innerHTML = `${this.t('golfCarts')}`;
+            if (tab === 'bookings') btn.innerHTML = `${this.t('bookings')}`;
         });
         
         // Кнопки календаря
@@ -874,8 +874,8 @@ class RentalApp {
             
             const typeSelect = document.getElementById('booking-type');
             if (typeSelect) {
-                typeSelect.options[0].text = `🏠 ${this.t('properties')}`;
-                typeSelect.options[1].text = `🏌️ ${this.t('golfCarts')}`;
+                typeSelect.options[0].text = `${this.t('properties')}`;
+                typeSelect.options[1].text = `${this.t('golfCarts')}`;
             }
             
             const cancelSelect = document.getElementById('booking-cancellation');
@@ -1582,10 +1582,10 @@ class RentalApp {
                         
                         <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
                             <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
-                                💰 ${booking.price} ₽
+                                ${booking.price} ₽
                             </span>
                             <span style="background: ${booking.depositPaid ? '#e8f5e9' : '#ffebee'}; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
-                                💵 ${this.t('deposit')} ${booking.deposit || 0} ₽
+                                ${this.t('deposit')} ${booking.deposit || 0} ₽
                                 (${booking.depositPaid ? '✅' : '❌'})
                             </span>
                         </div>
@@ -1665,7 +1665,7 @@ class RentalApp {
                         ${booking.phone ? `<div>${this.highlightText(booking.phone, this.calendarSearchQuery)}</div>` : ''}
                         <div style="margin-top: 5px;">
                             <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
-                                💰 ${booking.price} ₽
+                                ${booking.price} ₽
                             </span>
                         </div>
                     </div>
@@ -1986,26 +1986,26 @@ class RentalApp {
                         
                         <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
                             <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                💰 ${booking.price} ₽
+                                ${booking.price} ₽
                             </span>
                             <span style="background: ${booking.depositPaid ? '#e8f5e9' : '#ffebee'}; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                💵 ${this.t('deposit')} ${booking.deposit || 0} ₽
+                                ${this.t('deposit')} ${booking.deposit || 0} ₽
                                 (${booking.depositPaid ? '✅ ' + this.t('paid') : '❌ ' + this.t('notPaid')})
                             </span>
                             <span style="background: #fff3e0; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                🚫 ${this.t(booking.cancellationPolicy || 'free')}
+                                ${this.t(booking.cancellationPolicy || 'free')}
                             </span>
                         </div>
                         
                         ${booking.freeCancelUntil ? `
                             <div style="color: #666; margin-top: 5px; font-size: 12px;">
-                                ⏰ ${this.t('freeCancelUntil')} ${booking.freeCancelUntil}
+                                ${this.t('freeCancelUntil')} ${booking.freeCancelUntil}
                             </div>
                         ` : ''}
                         
                         ${booking.notes ? `
                             <div style="color: #666; margin-top: 5px; font-size: 12px; font-style: italic;">
-                                📝 ${this.highlightText(booking.notes, this.bookingsSearchQuery)}
+                                ${this.highlightText(booking.notes, this.bookingsSearchQuery)}
                             </div>
                         ` : ''}
                     </div>
@@ -2137,10 +2137,10 @@ class RentalApp {
                                 <div style="color: #666; margin-top: 5px;">${booking.notes || this.t('noNotes')}</div>
                                 <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
                                     <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                        💰 ${booking.price} ₽
+                                        ${booking.price} ₽
                                     </span>
                                     <span style="background: ${booking.depositPaid ? '#e8f5e9' : '#ffebee'}; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                        💵 ${this.t('deposit')} ${booking.deposit || 0} ₽
+                                        ${this.t('deposit')} ${booking.deposit || 0} ₽
                                         (${booking.depositPaid ? '✅' : '❌'})
                                     </span>
                                 </div>
@@ -2229,7 +2229,7 @@ class RentalApp {
                                 <div style="color: #666; margin-top: 5px;">${booking.phone || this.t('noPhone')}</div>
                                 <div style="margin-top: 8px;">
                                     <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                        💰 ${booking.price} ₽
+                                        ${booking.price} ₽
                                     </span>
                                 </div>
                             </div>
@@ -2783,3 +2783,4 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new RentalApp();
     window.app = app;
 });
+
