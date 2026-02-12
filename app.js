@@ -112,14 +112,14 @@ class RentalApp {
                 guestName: 'Имя гостя:',
                 guestPhone: 'Телефон:',
                 notes: 'Примечания:',
-                bookingPrice: 'Цена брони (₽):',
-                deposit: 'Депозит (₽):',
+                bookingPrice: 'Цена брони:',
+                deposit: 'Депозит:',
                 depositPaid: 'Депозит внесен',
                 cancellationPolicy: 'Политика отмены:',
-                freeCancellation: '🟢 Бесплатная отмена',
-                paidCancellation: '🔴 Платная отмена',
-                partialCancellation: '🟡 Частичная компенсация',
-                nonRefundable: '⛔ Невозвратный тариф',
+                freeCancellation: 'Бесплатная отмена',
+                paidCancellation: 'Платная отмена',
+                partialCancellation: 'Частичная компенсация',
+                nonRefundable: 'Невозвратный тариф',
                 freeCancelUntil: 'Срок бесплатной отмены:',
                 deleteBooking: 'Удалить бронь',
                 nightsCount: 'ночей',
@@ -243,14 +243,14 @@ class RentalApp {
                 guestName: 'Guest name:',
                 guestPhone: 'Phone:',
                 notes: 'Notes:',
-                bookingPrice: 'Booking price (₽):',
-                deposit: 'Deposit (₽):',
+                bookingPrice: 'Booking price:',
+                deposit: 'Deposit:',
                 depositPaid: 'Deposit paid',
                 cancellationPolicy: 'Cancellation policy:',
-                freeCancellation: '🟢 Free cancellation',
-                paidCancellation: '🔴 Paid cancellation',
-                partialCancellation: '🟡 Partial refund',
-                nonRefundable: '⛔ Non-refundable',
+                freeCancellation: 'Free cancellation',
+                paidCancellation: 'Paid cancellation',
+                partialCancellation: 'Partial refund',
+                nonRefundable: 'Non-refundable',
                 freeCancelUntil: 'Free cancellation until:',
                 deleteBooking: 'Delete booking',
                 nightsCount: 'nights',
@@ -959,7 +959,7 @@ class RentalApp {
         
         if (availableContainer) availableContainer.innerHTML = '';
         if (availableGolfContainer) availableGolfContainer.innerHTML = '';
-        if (bookedContainer) bookedContainer.innerHTML = '';
+        if (bookedContainer) bookedContainer.innerHTML = ''; // Очищаем полностью!
     }
     
     switchTab(tabName) {
@@ -1601,21 +1601,27 @@ class RentalApp {
         const container = document.getElementById('booked-properties-container');
         if (!container) return;
         
+        // ВАЖНО: полностью очищаем контейнер перед рендерингом!
+        container.innerHTML = '';
+        
         if (bookedProperties.length === 0) {
             return;
         }
         
-        const existingTitle = container.querySelector('h4');
-        if (!existingTitle) {
-            container.innerHTML = `
-                <h4 style="margin: 25px 0 15px 0; color: #e74c3c;">
-                    ${this.t('bookedProperties')}
-                    ${this.calendarSearchQuery ? `<span style="font-size: 14px; color: #666;"> (найдено: ${bookedProperties.length})</span>` : ''}
-                </h4>
-            `;
-        }
+        // Добавляем заголовок
+        const title = document.createElement('h4');
+        title.style.cssText = 'margin: 25px 0 15px 0; color: #e74c3c;';
+        title.innerHTML = `${this.t('bookedProperties')} ${this.calendarSearchQuery ? `<span style="font-size: 14px; color: #666;"> (найдено: ${bookedProperties.length})</span>` : ''}`;
+        container.appendChild(title);
         
-        const itemsHTML = bookedProperties.map(item => {
+        // Создаем контейнер для карточек
+        const cardsContainer = document.createElement('div');
+        cardsContainer.style.display = 'flex';
+        cardsContainer.style.flexDirection = 'column';
+        cardsContainer.style.gap = '12px';
+        
+        // Добавляем карточки
+        cardsContainer.innerHTML = bookedProperties.map(item => {
             const { property, booking, overlapDays } = item;
             const bookingStart = new Date(booking.startDate);
             const bookingEnd = new Date(booking.endDate);
@@ -1660,10 +1666,10 @@ class RentalApp {
                         
                         <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
                             <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
-                                💰 ${booking.price} ₽
+                                ${booking.price} 
                             </span>
                             <span style="background: ${booking.depositPaid ? '#e8f5e9' : '#ffebee'}; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
-                                💵 ${this.t('deposit')} ${booking.deposit || 0} ₽
+                                ${this.t('deposit')} ${booking.deposit || 0} 
                                 (${booking.depositPaid ? '✅' : '❌'})
                             </span>
                         </div>
@@ -1683,27 +1689,37 @@ class RentalApp {
             `;
         }).join('');
         
-        const contentDiv = document.createElement('div');
-        contentDiv.style.display = 'flex';
-        contentDiv.style.flexDirection = 'column';
-        contentDiv.style.gap = '12px';
-        contentDiv.innerHTML = itemsHTML;
-        
-        container.appendChild(contentDiv);
+        container.appendChild(cardsContainer);
     }
 
     renderBookedGolfCarts(bookedItems) {
         const container = document.getElementById('booked-properties-container');
         if (!container) return;
         
+        // ВАЖНО: НЕ очищаем весь контейнер, а добавляем только если есть данные
+        // Но проверяем, не добавлен ли уже заголовок для гольф-машин
+        
         if (bookedItems.length === 0) return;
         
-        const title = document.createElement('h4');
-        title.style.cssText = 'margin: 25px 0 15px 0; color: #e74c3c;';
-        title.textContent = `Занятые гольф-машины: ${this.calendarSearchQuery ? `(найдено: ${bookedItems.length})` : ''}`;
-        container.appendChild(title);
+        // Проверяем, есть ли уже заголовок для гольф-машин
+        const existingGolfTitle = Array.from(container.querySelectorAll('h4')).find(
+            h4 => h4.textContent.includes('Занятые гольф-машины') || h4.textContent.includes('Booked golf carts')
+        );
         
-        const itemsHTML = bookedItems.map(item => {
+        if (!existingGolfTitle) {
+            const title = document.createElement('h4');
+            title.style.cssText = 'margin: 25px 0 15px 0; color: #e74c3c;';
+            title.innerHTML = `${this.t('bookedGolfCarts')} ${this.calendarSearchQuery ? `<span style="font-size: 14px; color: #666;"> (найдено: ${bookedItems.length})</span>` : ''}`;
+            container.appendChild(title);
+        }
+        
+        // Создаем контейнер для карточек гольф-машин
+        const cardsContainer = document.createElement('div');
+        cardsContainer.style.display = 'flex';
+        cardsContainer.style.flexDirection = 'column';
+        cardsContainer.style.gap = '12px';
+        
+        cardsContainer.innerHTML = bookedItems.map(item => {
             const { cart, booking, overlapDays } = item;
             const bookingStart = new Date(booking.startDate);
             const bookingEnd = new Date(booking.endDate);
@@ -1749,7 +1765,7 @@ class RentalApp {
                         ${booking.phone ? `<div>${this.highlightText(booking.phone, this.calendarSearchQuery)}</div>` : ''}
                         <div style="margin-top: 5px;">
                             <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
-                                💰 ${booking.price} ₽
+                                ${booking.price} 
                             </span>
                         </div>
                     </div>
@@ -1768,13 +1784,7 @@ class RentalApp {
             `;
         }).join('');
         
-        const contentDiv = document.createElement('div');
-        contentDiv.style.display = 'flex';
-        contentDiv.style.flexDirection = 'column';
-        contentDiv.style.gap = '12px';
-        contentDiv.innerHTML = itemsHTML;
-        
-        container.appendChild(contentDiv);
+        container.appendChild(cardsContainer);
     }
     
     loadPropertiesList() {
@@ -2086,10 +2096,10 @@ class RentalApp {
                         
                         <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
                             <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                ${booking.price} ₽
+                                ${booking.price} 
                             </span>
                             <span style="background: ${booking.depositPaid ? '#e8f5e9' : '#ffebee'}; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                ${this.t('deposit')} ${booking.deposit || 0} ₽
+                                ${this.t('deposit')} ${booking.deposit || 0} 
                                 (${booking.depositPaid ? '✅ ' + this.t('paid') : '❌ ' + this.t('notPaid')})
                             </span>
                             <span style="background: #fff3e0; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
@@ -2240,10 +2250,10 @@ class RentalApp {
                                 <div style="color: #666; margin-top: 5px;">${booking.notes || this.t('noNotes')}</div>
                                 <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
                                     <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                        ${booking.price} ₽
+                                        ${booking.price} 
                                     </span>
                                     <span style="background: ${booking.depositPaid ? '#e8f5e9' : '#ffebee'}; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                        ${this.t('deposit')} ${booking.deposit || 0} ₽
+                                        ${this.t('deposit')} ${booking.deposit || 0} 
                                         (${booking.depositPaid ? '✅' : '❌'})
                                     </span>
                                 </div>
@@ -2335,7 +2345,7 @@ class RentalApp {
                                 <div style="color: #666; margin-top: 5px;">${booking.phone || this.t('noPhone')}</div>
                                 <div style="margin-top: 8px;">
                                     <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                        ${booking.price} ₽
+                                        ${booking.price} 
                                     </span>
                                 </div>
                             </div>
