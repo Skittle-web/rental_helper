@@ -2193,27 +2193,26 @@ class RentalApp {
     
     bookProperty(propertyId) {
         this.currentEditingBooking = null;
-        document.getElementById('booking-type').value = 'property';
-        this.updateBookingItemsList();
-        document.getElementById('booking-item').value = propertyId;
-        this.showBookingModal();
+        // Передаем ID и тип напрямую в модалку
+        this.showBookingModal(propertyId, 'property');
     }
 
     bookGolfCart(cartId) {
         this.currentEditingBooking = null;
-        document.getElementById('booking-type').value = 'golf-cart';
-        this.updateBookingItemsList();
-        document.getElementById('booking-item').value = cartId;
-        this.showBookingModal();
+        // Передаем ID и тип напрямую в модалку
+        this.showBookingModal(cartId, 'golf-cart');
     }
     
     viewPropertyBookings(propertyId) {
         const property = this.data.properties.find(p => p.id === propertyId);
         if (!property) return;
         
+        // ИСПРАВЛЕНИЕ: фильтруем ТОЛЬКО бронирования этого жилья!
         const bookings = this.data.bookings
             .filter(b => b.itemId === propertyId && b.itemType === 'property')
             .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+        
+        console.log(`Бронирования для жилья ${property.name}:`, bookings); // Для отладки
         
         const modalId = 'bookings-modal-' + Date.now();
         
@@ -2227,6 +2226,9 @@ class RentalApp {
                               title="Нажмите, чтобы увидеть детали">❗</span>
                     ` : ''}
                     <h3 style="margin: 0;">${this.t('propertyBookings')}: ${property.name}</h3>
+                    <span style="background: #3498db; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px;">
+                        ${bookings.length} ${this.t('totalBookings')}
+                    </span>
                 </div>
         `;
         
@@ -2250,10 +2252,10 @@ class RentalApp {
                                 <div style="color: #666; margin-top: 5px;">${booking.notes || this.t('noNotes')}</div>
                                 <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
                                     <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                        ${booking.price} 
+                                        💰 ${booking.price} ₽
                                     </span>
                                     <span style="background: ${booking.depositPaid ? '#e8f5e9' : '#ffebee'}; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                        ${this.t('deposit')} ${booking.deposit || 0} 
+                                        💵 ${this.t('deposit')} ${booking.deposit || 0} ₽
                                         (${booking.depositPaid ? '✅' : '❌'})
                                     </span>
                                 </div>
@@ -2307,9 +2309,12 @@ class RentalApp {
         const cart = this.data.golfCarts.find(g => g.id === cartId);
         if (!cart) return;
         
+        // ИСПРАВЛЕНИЕ: фильтруем ТОЛЬКО бронирования этой машины!
         const bookings = this.data.bookings
             .filter(b => b.itemId === cartId && b.itemType === 'golf-cart')
             .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+        
+        console.log(`Бронирования для машины ${cart.name}:`, bookings); // Для отладки
         
         const modalId = 'bookings-modal-' + Date.now();
         
@@ -2323,6 +2328,9 @@ class RentalApp {
                               title="Нажмите, чтобы увидеть детали">❗</span>
                     ` : ''}
                     <h3 style="margin: 0;">Бронирования гольф-машины: ${cart.name}</h3>
+                    <span style="background: #FF9800; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px;">
+                        ${bookings.length} ${this.t('totalBookings')}
+                    </span>
                 </div>
         `;
         
@@ -2345,7 +2353,7 @@ class RentalApp {
                                 <div style="color: #666; margin-top: 5px;">${booking.phone || this.t('noPhone')}</div>
                                 <div style="margin-top: 8px;">
                                     <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                        ${booking.price} 
+                                        💰 ${booking.price} ₽
                                     </span>
                                 </div>
                             </div>
@@ -2491,13 +2499,24 @@ class RentalApp {
         overlay.style.display = 'block';
     }
     
-    showBookingModal(itemId = null) {
+    showBookingModal(presetItemId = null, presetItemType = null) {
         const modal = document.getElementById('booking-modal');
         const overlay = document.getElementById('modal-overlay');
         const title = document.getElementById('booking-modal-title');
         const deleteBtn = document.getElementById('delete-booking');
         
-        this.updateBookingItemsList();
+        // Если передан presetItemId, устанавливаем тип и ID
+        if (presetItemId && presetItemType) {
+            document.getElementById('booking-type').value = presetItemType;
+            this.updateBookingItemsList();
+            
+            // Даем время на обновление списка
+            setTimeout(() => {
+                document.getElementById('booking-item').value = presetItemId;
+            }, 50);
+        } else {
+            this.updateBookingItemsList();
+        }
         
         if (this.currentEditingBooking) {
             title.textContent = this.t('editBookingTitle');
@@ -2505,7 +2524,12 @@ class RentalApp {
             
             document.getElementById('booking-type').value = this.currentEditingBooking.itemType || 'property';
             this.updateBookingItemsList();
-            document.getElementById('booking-item').value = this.currentEditingBooking.itemId;
+            
+            // Даем время на обновление списка
+            setTimeout(() => {
+                document.getElementById('booking-item').value = this.currentEditingBooking.itemId;
+            }, 50);
+            
             document.getElementById('booking-start').value = this.currentEditingBooking.startDate;
             document.getElementById('booking-end').value = this.currentEditingBooking.endDate;
             document.getElementById('booking-guest').value = this.currentEditingBooking.guestName || '';
@@ -2545,6 +2569,9 @@ class RentalApp {
         const type = document.getElementById('booking-type').value;
         const itemSelect = document.getElementById('booking-item');
         
+        // Сохраняем текущее выбранное значение, если есть
+        const currentValue = itemSelect.value;
+        
         itemSelect.innerHTML = '';
         
         if (type === 'property') {
@@ -2552,9 +2579,6 @@ class RentalApp {
                 const option = document.createElement('option');
                 option.value = property.id;
                 option.textContent = `${property.name} ${property.important ? '❗' : ''}`;
-                if (this.currentEditingBooking && this.currentEditingBooking.itemId === property.id) {
-                    option.selected = true;
-                }
                 itemSelect.appendChild(option);
             });
         } else {
@@ -2562,11 +2586,16 @@ class RentalApp {
                 const option = document.createElement('option');
                 option.value = cart.id;
                 option.textContent = `${cart.name} (${cart.owner}) - ${cart.seats} мест ${cart.important ? '❗' : ''}`;
-                if (this.currentEditingBooking && this.currentEditingBooking.itemId === cart.id) {
-                    option.selected = true;
-                }
                 itemSelect.appendChild(option);
             });
+        }
+        
+        // Восстанавливаем выбранное значение, если оно было и существует в новом списке
+        if (currentValue) {
+            const exists = Array.from(itemSelect.options).some(opt => opt.value == currentValue);
+            if (exists) {
+                itemSelect.value = currentValue;
+            }
         }
     }
     
@@ -2665,6 +2694,7 @@ class RentalApp {
     saveBooking() {
         const itemType = document.getElementById('booking-type').value;
         const itemId = parseInt(document.getElementById('booking-item').value);
+        console.log('Сохранение бронирования:', { itemType, itemId });
         const startDate = document.getElementById('booking-start').value;
         const endDate = document.getElementById('booking-end').value;
         const guestName = document.getElementById('booking-guest').value.trim();
@@ -2693,12 +2723,31 @@ class RentalApp {
         
         const start = new Date(startDate);
         const end = new Date(endDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         
+        // Проверка на даты в прошлом
+        if (start < today) {
+            alert('Дата начала не может быть в прошлом');
+            return;
+        }
+        
+        if (end < start) {
+            alert('Дата окончания не может быть раньше даты начала');
+            return;
+        }
+        
+        // ИСПРАВЛЕНИЕ: проверяем пересечение ТОЛЬКО для того же объекта!
         const hasConflict = this.data.bookings.some(booking => {
+            // Пропускаем текущее редактируемое бронирование
             if (this.currentEditingBooking && booking.id === this.currentEditingBooking.id) {
                 return false;
             }
-            if (booking.itemId !== itemId || booking.itemType !== itemType) return false;
+            
+            // ВАЖНО: проверяем только бронирования ДЛЯ ЭТОГО ЖЕ ОБЪЕКТА!
+            if (booking.itemId !== itemId || booking.itemType !== itemType) {
+                return false; // Разные объекты - не пересекаются!
+            }
             
             const bookingStart = new Date(booking.startDate);
             const bookingEnd = new Date(booking.endDate);
@@ -2710,6 +2759,8 @@ class RentalApp {
             newStart.setHours(0, 0, 0, 0);
             newEnd.setHours(23, 59, 59, 999);
             
+            // Проверка на пересечение: 
+            // новое бронирование начинается до окончания существующего И заканчивается после начала существующего
             return newStart <= bookingEnd && newEnd >= bookingStart;
         });
         
@@ -2889,6 +2940,43 @@ class RentalApp {
         reader.readAsText(file);
         
         event.target.value = '';
+    }
+
+    // Отладка: показать все бронирования
+    debugBookings() {
+        console.log('=== ВСЕ БРОНИРОВАНИЯ ===');
+        this.data.bookings.forEach(b => {
+            const itemName = this.getItemName(b.itemId, b.itemType);
+            console.log({
+                id: b.id,
+                itemType: b.itemType,
+                itemId: b.itemId,
+                itemName: itemName,
+                dates: `${b.startDate} - ${b.endDate}`,
+                guest: b.guestName
+            });
+        });
+        console.log('=========================');
+        alert('Смотри консоль (F12)');
+    }
+
+    // Добавьте в конец класса для отладки
+    checkBookings() {
+        console.log('=== ПРОВЕРКА БРОНИРОВАНИЙ ===');
+        console.log('Все брони:', this.data.bookings);
+        console.log('Все жилье:', this.data.properties);
+        console.log('Все машины:', this.data.golfCarts);
+        
+        // Проверяем соответствие ID
+        this.data.bookings.forEach(booking => {
+            if (booking.itemType === 'property') {
+                const property = this.data.properties.find(p => p.id === booking.itemId);
+                console.log(`Бронь ID ${booking.id}: жилье ID ${booking.itemId} -> ${property ? property.name : 'НЕ НАЙДЕНО!'}`);
+            } else {
+                const cart = this.data.golfCarts.find(g => g.id === booking.itemId);
+                console.log(`Бронь ID ${booking.id}: машина ID ${booking.itemId} -> ${cart ? cart.name : 'НЕ НАЙДЕНО!'}`);
+            }
+        });
     }
 }
 
