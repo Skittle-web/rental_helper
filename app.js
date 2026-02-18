@@ -1689,10 +1689,7 @@ class RentalApp {
                         (${totalBookingNights} ${this.t('nights')})
                     </div>
                     
-                    <div style="font-size: 11px; color: #c05621; background: #feebc8; padding: 4px 8px; border-radius: 4px; margin: 8px 0;">
-                        <strong>Пересекается:</strong> ${overlapDays} ${this.t('nights')} 
-                        ${this.language === 'ru' ? 'с выбранным периодом' : 'with selected period'}
-                    </div>
+                    
                     
                     <div style="font-size: 12px; margin-top: 8px;">
                         <div><strong>${this.t('guest')}</strong> ${this.highlightText(booking.guestName, this.calendarSearchQuery)}</div>
@@ -1790,10 +1787,7 @@ class RentalApp {
                         (${totalBookingDays} ${this.t('days')})
                     </div>
                     
-                    <div style="font-size: 11px; color: #c05621; background: #feebc8; padding: 4px 8px; border-radius: 4px; margin: 8px 0;">
-                        <strong>Пересекается:</strong> ${overlapDays} ${this.t('days')} 
-                        ${this.language === 'ru' ? 'с выбранным периодом' : 'with selected period'}
-                    </div>
+                    
                     
                     <div style="font-size: 12px; margin-top: 8px;">
                         <div><strong>${this.t('guest')}</strong> ${this.highlightText(booking.guestName, this.calendarSearchQuery)}</div>
@@ -2097,13 +2091,15 @@ class RentalApp {
                 itemImportantText = cart ? cart.importantText : '';
             }
             
+            // В методе loadAllBookings(), внутри map для каждого бронирования:
+
             const startDate = new Date(booking.startDate);
             const endDate = new Date(booking.endDate);
             const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-            
+
             const safeTitle = this.escapeHtml(itemName);
             const safeMessage = this.escapeHtml(itemImportantText || this.t('noImportantText'));
-            
+
             return `
                 <div class="booking-card" data-booking-id="${booking.id}" style="border-left: 5px solid ${itemColor}; ${itemImportant ? 'border-left-width: 8px; border-left-color: #ff0000;' : ''}">
                     <div>
@@ -2129,12 +2125,13 @@ class RentalApp {
                         <div class="booking-guest">${this.highlightText(booking.guestName, this.bookingsSearchQuery)}</div>
                         <div style="color: #666; margin-top: 5px;">${this.highlightText(booking.phone || this.t('noPhone'), this.bookingsSearchQuery)}</div>
                         
+                        <!-- ИСПРАВЛЕННЫЙ БЛОК: теперь депозит и политика отмены отображаются правильно -->
                         <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
                             <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                ${booking.price} 
+                                ${booking.price} ₽
                             </span>
                             <span style="background: ${booking.depositPaid ? '#e8f5e9' : '#ffebee'}; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                ${this.t('deposit')} ${booking.deposit || 0} 
+                                ${this.t('deposit')} ${booking.deposit || 0} ₽
                                 (${booking.depositPaid ? '✅ ' + this.t('paid') : '❌ ' + this.t('notPaid')})
                             </span>
                             <span style="background: #fff3e0; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
@@ -2291,10 +2288,10 @@ class RentalApp {
                                 <div style="color: #666; margin-top: 5px;">${booking.notes || this.t('noNotes')}</div>
                                 <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
                                     <span style="background: #e8f5e9; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                        💰 ${booking.price} ₽
+                                        ${booking.price} ₽
                                     </span>
                                     <span style="background: ${booking.depositPaid ? '#e8f5e9' : '#ffebee'}; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                        💵 ${this.t('deposit')} ${booking.deposit || 0} ₽
+                                        ${this.t('deposit')} ${booking.deposit || 0} ₽
                                         (${booking.depositPaid ? '✅' : '❌'})
                                     </span>
                                 </div>
