@@ -1223,3 +1223,47 @@ mark.highlight {
     transform: translateY(-6px);
     box-shadow: 0 20px 30px rgba(255, 0, 0, 0.15);
 }
+
+/* Подсветка выбранного диапазона в календаре */
+.calendar-day.in-range {
+    background: #e3f2fd !important;
+    border-color: #90caf9 !important;
+}
+
+.calendar-day.selected {
+    background: #2196f3 !important;
+    color: white !important;
+    border-color: #1976d2 !important;
+    font-weight: bold;
+}
+
+.calendar-day.selected .day-number {
+    color: white;
+}
+
+.calendar-day.in-range .day-number {
+    color: #1976d2;
+    font-weight: 500;
+}
+
+/* Улучшенный блок с выбранными датами */
+#selected-dates-info {
+    transition: all 0.3s ease;
+    border: 1px solid #bbdefb;
+}
+
+#selected-dates-info:hover {
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Анимация для подсветки */
+@keyframes range-highlight {
+    0% { background-color: #e3f2fd; }
+    50% { background-color: #bbdefb; }
+    100% { background-color: #e3f2fd; }
+}
+
+.calendar-day.in-range {
+    animation: range-highlight 2s infinite;
+}
