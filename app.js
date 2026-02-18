@@ -167,7 +167,7 @@ class RentalApp {
                 guest: 'Гость:',
                 
                 free: 'Бесплатная отмена',
-                paid: 'Платная отмена',
+                
                 partial: 'Частичная компенсация',
                 'non-refundable': 'Невозвратный тариф'
             },
@@ -298,7 +298,7 @@ class RentalApp {
                 guest: 'Guest:',
                 
                 free: 'Free cancellation',
-                paid: 'Paid cancellation',
+                
                 partial: 'Partial refund',
                 'non-refundable': 'Non-refundable'
             }
@@ -306,6 +306,32 @@ class RentalApp {
         
         // Запускаем инициализацию
         this.init();
+    }
+
+    // Автоматическое резервное копирование
+    autoBackup() {
+        const backup = {
+            data: this.data,
+            timestamp: new Date().toISOString(),
+            version: this.version
+        };
+        
+        if (this.isElectron && this.ipcRenderer) {
+            try {
+                this.ipcRenderer.send('backup-data', backup);
+            } catch (e) {
+                console.log('Ошибка авто-бэкапа:', e);
+            }
+        }
+    }
+
+    // Восстановление из бэкапа
+    restoreFromBackup(backupData) {
+        if (confirm('Восстановить данные из резервной копии?')) {
+            this.data = backupData.data;
+            this.saveData();
+            this.refreshAllData();
+        }
     }
     
     t(key, ...args) {
