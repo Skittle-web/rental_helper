@@ -335,6 +335,41 @@ class RentalApp {
             bookings: []
         };
     }
+
+    closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) modal.remove();
+        document.getElementById('modal-overlay').style.display = 'none';
+    }
+
+    editBookingFromModal(bookingId, modalIdToClose) {
+        this.closeModal(modalIdToClose);
+        this.editBooking(bookingId);
+    }
+
+    deleteBookingFromModal(bookingId, modalIdToClose) {
+        if (confirm(this.t('deleteBookingConfirm'))) {
+            this.data.bookings = this.data.bookings.filter(b => b.id !== bookingId);
+            const success = this.saveData();
+            if (success) {
+                this.refreshAllData();
+                this.closeModal(modalIdToClose);
+                
+            } else {
+                alert('Ошибка при сохранении данных');
+            }
+        }
+    }
+
+    bookPropertyFromModal(propertyId, modalIdToClose) {
+        this.closeModal(modalIdToClose);
+        this.bookProperty(propertyId);
+    }
+
+    bookGolfCartFromModal(cartId, modalIdToClose) {
+        this.closeModal(modalIdToClose);
+        this.bookGolfCart(cartId);
+    }
     
     loadLanguageFromElectron() {
         try {
@@ -2204,6 +2239,10 @@ class RentalApp {
     }
     
     viewPropertyBookings(propertyId) {
+        // Закрываем все предыдущие модалки просмотра бронирований
+        const openModals = document.querySelectorAll('[id^="bookings-modal-"]');
+        openModals.forEach(modal => modal.remove());
+        
         const property = this.data.properties.find(p => p.id === propertyId);
         if (!property) return;
         
@@ -2261,11 +2300,11 @@ class RentalApp {
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <button onclick="window.app.editBooking(${booking.id})" 
+                                <button onclick="window.app.editBookingFromModal(${booking.id}, '${modalId}')" 
                                         style="padding: 5px 10px; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                     ${this.t('edit')}
                                 </button>
-                                <button onclick="window.app.deleteBooking(${booking.id})" 
+                                <button onclick="window.app.deleteBookingFromModal(${booking.id}, '${modalId}')" 
                                         style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                     ${this.t('delete')}
                                 </button>
@@ -2278,11 +2317,11 @@ class RentalApp {
         
         bookingsHTML += `
             <div style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
-                <button onclick="document.getElementById('${modalId}').remove(); document.getElementById('modal-overlay').style.display = 'none';" 
+                <button onclick="window.app.closeModal('${modalId}')" 
                         style="padding: 10px 30px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
                     ${this.t('close')}
                 </button>
-                <button onclick="window.app.bookProperty(${propertyId}); document.getElementById('${modalId}').remove();" 
+                <button onclick="window.app.bookPropertyFromModal(${propertyId}, '${modalId}')" 
                         style="padding: 10px 30px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
                     ${this.t('addBooking')}
                 </button>
@@ -2300,12 +2339,15 @@ class RentalApp {
         document.body.appendChild(modalContainer);
         
         modalOverlay.onclick = () => {
-            document.getElementById(modalId)?.remove();
-            modalOverlay.style.display = 'none';
+            this.closeModal(modalId);
         };
     }
 
     viewGolfCartBookings(cartId) {
+        // Закрываем все предыдущие модалки просмотра бронирований
+        const openModals = document.querySelectorAll('[id^="bookings-modal-"]');
+        openModals.forEach(modal => modal.remove());
+        
         const cart = this.data.golfCarts.find(g => g.id === cartId);
         if (!cart) return;
         
@@ -2358,11 +2400,11 @@ class RentalApp {
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <button onclick="window.app.editBooking(${booking.id})" 
+                                <button onclick="window.app.editBookingFromModal(${booking.id}, '${modalId}')" 
                                         style="padding: 5px 10px; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                     ${this.t('edit')}
                                 </button>
-                                <button onclick="window.app.deleteBooking(${booking.id})" 
+                                <button onclick="window.app.deleteBookingFromModal(${booking.id}, '${modalId}')" 
                                         style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                     ${this.t('delete')}
                                 </button>
@@ -2375,11 +2417,11 @@ class RentalApp {
         
         bookingsHTML += `
             <div style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
-                <button onclick="document.getElementById('${modalId}').remove(); document.getElementById('modal-overlay').style.display = 'none';" 
+                <button onclick="window.app.closeModal('${modalId}')" 
                         style="padding: 10px 30px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
                     ${this.t('close')}
                 </button>
-                <button onclick="window.app.bookGolfCart(${cartId}); document.getElementById('${modalId}').remove();" 
+                <button onclick="window.app.bookGolfCartFromModal(${cartId}, '${modalId}')" 
                         style="padding: 10px 30px; background: #FF9800; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
                     ${this.t('addBooking')}
                 </button>
@@ -2397,8 +2439,7 @@ class RentalApp {
         document.body.appendChild(modalContainer);
         
         modalOverlay.onclick = () => {
-            document.getElementById(modalId)?.remove();
-            modalOverlay.style.display = 'none';
+            this.closeModal(modalId);
         };
     }
     
@@ -2415,6 +2456,10 @@ class RentalApp {
             if (golfCartModal) golfCartModal.style.display = 'none';
             if (bookingModal) bookingModal.style.display = 'none';
         }
+        
+        // Закрываем все модалки просмотра бронирований
+        const viewModals = document.querySelectorAll('[id^="bookings-modal-"]');
+        viewModals.forEach(modal => modal.remove());
         
         const overlay = document.getElementById('modal-overlay');
         if (overlay) overlay.style.display = 'none';
@@ -2819,6 +2864,13 @@ class RentalApp {
     }
     
     editBooking(bookingId) {
+        // Закрываем все открытые модалки просмотра бронирований
+        const openModals = document.querySelectorAll('[id^="bookings-modal-"]');
+        openModals.forEach(modal => {
+            modal.remove();
+            document.getElementById('modal-overlay').style.display = 'none';
+        });
+        
         this.currentEditingBooking = this.data.bookings.find(b => b.id === bookingId);
         if (this.currentEditingBooking) {
             this.showBookingModal();
@@ -2866,6 +2918,17 @@ class RentalApp {
             const success = this.saveData();
             if (success) {
                 this.refreshAllData();
+                
+                // Закрываем модалку просмотра бронирований, если она открыта
+                const openModals = document.querySelectorAll('[id^="bookings-modal-"]');
+                openModals.forEach(modal => modal.remove());
+                
+                // Если открыта модалка редактирования этой брони - закрываем её
+                if (this.currentEditingBooking && this.currentEditingBooking.id === bookingId) {
+                    this.hideModal('booking-modal');
+                }
+                
+                
             } else {
                 alert('Ошибка при сохранении данных');
             }
